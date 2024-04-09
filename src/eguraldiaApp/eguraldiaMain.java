@@ -1,5 +1,7 @@
 package eguraldiaApp;
 
+import java.util.ArrayList;
+
 import javax.swing.UIManager;
 
 public class eguraldiaMain {
