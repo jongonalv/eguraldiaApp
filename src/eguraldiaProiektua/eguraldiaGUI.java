@@ -1,155 +1,395 @@
 package eguraldiaProiektua;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.sql.Date;
 import java.time.LocalDate;
+import java.time.Year;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+
 import javax.imageio.ImageIO;
 
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 public class eguraldiaGUI {
 	
-    private static JFrame frame = new JFrame("Eguraldia");
-    
-    private static JPanel panelKokapena = new JPanel();
-    
-    // Kokapenaren uneko eguraldia erakutsiko duen panelaren elementuak
-    private static JPanel  panelUnekoEguraldia 	= new JPanel();
-    private static JLabel txtKokapena			= new JLabel("Tolosako eguraldia");
-    private static JButton btnEgunak			= new JButton("Egunak");
-    private static JButton btnOrduak			= new JButton("Orduak");
-    private static JButton btnKokapenaGehitu 	= new JButton(loadImage("src/assets/kokapena.png"));
-    
-    // Eguraldiaren datuak ikustkeko panelaren elementuak
-    private static CardLayout cardLayout 		= new CardLayout();
-    private static JPanel panelEguraldiaMain 	= new JPanel(cardLayout);
-    
-    // Eguraldia orduz ordu ikusteko panelaren elementuak
-    private static JPanel panelEguraldiaOrduak 	= new JPanel();
-    
-    // Eguraldia egunez egun ikusteko panelaren elementuak
-    private static JPanel panelEguraldiaEgunak	= new JPanel();
+	static Component elemento;
 
-    public static void jarriElementuak() {
-        frame.setLayout(new GridBagLayout());
-        
-        GridBagConstraints gbc = new GridBagConstraints();
-        GridBagConstraints gbc2 = new GridBagConstraints();
-        GridBagConstraints gbc3 = new GridBagConstraints();
-        
-        Border innerBorder = BorderFactory.createLineBorder(Color.lightGray, 2);
-        
-        Border outerBorder = BorderFactory.createEmptyBorder(5, 5, 5, 5);
-        
-        Border compoundBorder = BorderFactory.createCompoundBorder(outerBorder, innerBorder);
+	// Lehioa
+	private static JFrame frame = new JFrame("Eguraldia");
 
-        // Panel Kokapena
-        panelKokapena.setBorder(compoundBorder);
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.gridwidth = 1;
-        gbc.gridheight = 2;
-        gbc.weightx = 0.40;
-        gbc.weighty = 1.0;
-        gbc.fill = GridBagConstraints.BOTH;
-        panelKokapena.setSize(300, 300);
-        
-        frame.add(panelKokapena, gbc);
-        
-        // Panel EguraldiaMain grid kokapena
-        panelEguraldiaMain.setBorder(compoundBorder);
-        gbc.gridx = 1;
-        gbc.gridy = 1;
-        gbc.gridwidth = 1;
-        gbc.gridheight = 1;
-        gbc.weightx = 0.75;
-        gbc.weighty = 0.5;      
-        panelEguraldiaMain.add(panelEguraldiaEgunak, "egunak");
-        panelEguraldiaMain.add(panelEguraldiaOrduak, "orduak");
-        
-        // Panel EguraldiaEgunak elementuak
-        panelEguraldiaEgunak.setLayout(new GridBagLayout());
-        gbc2 = new GridBagConstraints();
-        gbc2.gridx = 0;
-        gbc2.gridy = 0;
-        gbc2.weightx = 1.0;
-        gbc2.weighty = 1.0;
-        gbc2.fill = GridBagConstraints.BOTH;
+	// Gordeko diren kokapenak panela
+	private static JPanel panelKokapena = new JPanel();
+	private static JPanel panelbtnKokapenak	= new JPanel();
+	private static JButton kokapenaGehitu = new JButton();
+	private static JButton kokapenaEzabatu = new JButton();
 
-        // 7 Egunen elementuak gehitzeko buklea
-        for (int i = 1; i <= 7; i++) {
-        	LocalDate data = LocalDate.now();
-            JLabel label = new JLabel(data.plusDays(i).toString());
-            label.setBorder(innerBorder);
-            panelEguraldiaEgunak.add(label, gbc2);
-            gbc2.gridx++;
-        }  
-        
-        // Panel EguraldiaEgunak elementuak
-        panelEguraldiaOrduak.setLayout(new GridBagLayout());
-        gbc2 = new GridBagConstraints();
-        gbc2.gridx = 0;
-        gbc2.gridy = 0;
-        gbc2.weightx = 1.0;
-        gbc2.weighty = 1.0;
-        gbc2.fill = GridBagConstraints.BOTH;
+	// Kokapenaren uneko eguraldia erakutsiko duen panelaren elementuak
+	private static JPanel panelUnekoEguraldia = new JPanel(new BorderLayout());
+	private static JPanel panelKokapenakEmaitza = new JPanel();
+	private static JPanel panelDatuakJPanel = new JPanel();
+	private static JPanel panelBtn	= new JPanel(new FlowLayout(FlowLayout.RIGHT));
+	private static JLabel txtKokapena = new JLabel();
+	private static JTextField kokapenaBilatu = new JTextField("Bilatu...", 20);
+	private static JComboBox<String> kokapenakAurkitu = new JComboBox<String>();
+	private static JButton btnEgunak = new JButton("Egunak");
+	private static JButton btnOrduak = new JButton("Orduak");
+	private static JButton btnEtxea = new JButton();
+	private static JButton btnBilatu = new JButton();
+	private static String tenperatura = "";
+	private static JLabel[] elementos = new JLabel[10];
 
-        // 7 Egunen elementuak gehitzeko buklea
-        for (int i = 1; i <= 24; i++) {
-            JLabel label = new JLabel("i:" + i);
-            label.setBorder(innerBorder);
-            panelEguraldiaOrduak.add(label, gbc2);
-            gbc2.gridx++;
-        }
-       
-        frame.add(panelEguraldiaMain, gbc);
+	// Eguraldiaren datuak ikustkeko panelaren elementuak
+	private static CardLayout cardLayout = new CardLayout();
+	private static JPanel panelEguraldiaMain = new JPanel(cardLayout);
 
-        // Uneko eguraldia erakusten duen panelaren elementuak gehitu
-        panelUnekoEguraldia.setBorder(compoundBorder);
-        gbc.gridx = 1;
-        gbc.gridy = 0;
-        gbc.gridwidth = 1;
-        gbc.gridheight = 1;
-        gbc.weightx = 0.75;
-        gbc.weighty = 0.5;
-        
-        // Panel EguraldiaEgunak elementuak
-        panelUnekoEguraldia.add(btnEgunak);
-        panelUnekoEguraldia.add(btnOrduak);
-        
-        // Panel orduak eta panel egunen arteko aldaketa egiteko listener-ak
-        btnEgunak.addActionListener(e -> {
-		    cardLayout.show(panelEguraldiaMain, "egunak");
-        });
-        
-        btnOrduak.addActionListener(e -> {
-		    cardLayout.show(panelEguraldiaMain, "orduak");
-        });
-        
-        frame.add(panelUnekoEguraldia, gbc);
+	// Eguraldia orduz ordu ikusteko panelaren elementuak
+	private static JPanel panelEguraldiaOrduak = new JPanel();
+	private static JPanel panelLabels = new JPanel(new GridBagLayout());
+	private static JScrollPane scrollPane = new JScrollPane(panelLabels);
 
-        frame.setSize(1400, 760);
-        frame.setLocationRelativeTo(null);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setVisible(true);
-    }
-    
-	private static ImageIcon loadImage(String resourcePath) {
-		try {
-			// read the image file from the path given
-			BufferedImage image = ImageIO.read(new File(resourcePath));
+	// Eguraldia egunez egun ikusteko panelaren elementuak
+	private static JPanel panelEguraldiaEgunak = new JPanel();
 
-			// returns an image icon so that our component can render it
-			return new ImageIcon(image);
-		} catch (IOException e) {
-			e.printStackTrace();
+	public static void jarriElementuak() {
+		
+		frame.setLayout(new GridBagLayout());
+
+		GridBagConstraints gbc = new GridBagConstraints();
+
+		Border innerBorder = BorderFactory.createLineBorder(Color.lightGray, 2);
+
+		Border outerBorder = BorderFactory.createLineBorder(new Color(200, 230, 255), 15);
+
+		Border compoundBorder = BorderFactory.createCompoundBorder(outerBorder, innerBorder);
+
+		// Panel Kokapena
+		panelKokapena.setBorder(compoundBorder);
+		panelKokapena.setLayout(new BorderLayout());
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 2;
+		gbc.weightx = 0.35;
+		gbc.weighty = 1.0;
+		gbc.fill = GridBagConstraints.BOTH;
+		
+		estiloak.gehituKokapena(kokapenaGehitu);
+		estiloak.ezabatuKokapena(kokapenaEzabatu);
+		
+		panelbtnKokapenak.setLayout(new FlowLayout(FlowLayout.CENTER));
+		panelbtnKokapenak.setBorder(new EmptyBorder(0, 0, 50, 0));
+		panelbtnKokapenak.add(kokapenaGehitu);
+		panelbtnKokapenak.add(Box.createRigidArea(new Dimension(50, 0)));
+		panelbtnKokapenak.add(kokapenaEzabatu);		
+		
+		panelKokapena.add(panelbtnKokapenak, BorderLayout.SOUTH);
+		frame.add(panelKokapena, gbc);
+
+		// Panel EguraldiaMain grid kokapena
+		panelEguraldiaMain.setBorder(compoundBorder);
+		gbc.gridx = 1;
+		gbc.gridy = 1;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.75;
+		gbc.weighty = 0.3;
+
+		// Panel EguraldiaEgunak elementuak
+		panelEguraldiaEgunak.setLayout(new GridBagLayout());
+		GridBagConstraints gbcEgunak = new GridBagConstraints();
+		gbcEgunak.gridx = 0;
+		gbcEgunak.gridy = 0;
+		gbcEgunak.weightx = 1.0;
+		gbcEgunak.weighty = 1.0;
+		gbcEgunak.fill = GridBagConstraints.BOTH;
+
+		// 7 Egunen elementuak gehitzeko buklea
+		for (int i = 0; i <= 6; i++) {
+			
+			// Data sortu
+		    LocalDate data = LocalDate.now().plusDays(i);
+		    JPanel panelEgunak = new JPanel(new GridBagLayout());
+		    panelEgunak.setBorder(innerBorder);
+		    
+		    // Panelarentzako grid bag bat sortu elementua ilarak eta zutabe ezberdinetan banatzeko
+		    GridBagConstraints gbcPanelEgunak = new GridBagConstraints();
+		    gbcPanelEgunak.gridx = 0;
+		    gbcPanelEgunak.gridy = 0;
+		    gbcPanelEgunak.weightx = 1.0;
+		    gbcPanelEgunak.weighty = 1.0;
+		    gbcPanelEgunak.fill = GridBagConstraints.BOTH;
+
+		    // Data gehitzeko blokeko lehenengo ilaran (goran). Label bat sortu eta editatu.
+		    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM");
+		    JLabel dataLabel = new JLabel(data.format(formatter));
+		    dataLabel.setFont(new Font(dataLabel.getFont().getName(), Font.PLAIN, 20));
+		    dataLabel.setHorizontalAlignment(SwingConstants.CENTER);	// Label-a zentratu
+		    
+		    // Dataren Label-a zentratzeko, gridbag bat sortu eta erdialdean kokatu
+		    GridBagConstraints gbcDataLabel = new GridBagConstraints();
+		    gbcDataLabel.gridx = 0;
+		    gbcDataLabel.gridy = 0;
+		    gbcDataLabel.gridwidth = GridBagConstraints.REMAINDER; // Panel-aren antxura guztia okupatu
+		    panelEgunak.add(dataLabel, gbcDataLabel);
+
+		    // Bigarren lerroa, euskeraz, dataren eguna idazteko
+		    JLabel egunaLabel = new JLabel(astekoEgunak.values()[data.getDayOfWeek().getValue() - 1].getEuskera());
+		    egunaLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		    
+		    // Egunaren label-a zentratzeko gridbag-a
+		    GridBagConstraints gbcEgunaLabel = (GridBagConstraints) gbcPanelEgunak.clone();
+		    gbcEgunaLabel.gridwidth = GridBagConstraints.REMAINDER;	// Panel-aren antxura guztia okupatu
+		    gbcEgunaLabel.gridy++;	        
+		    panelEgunak.add(egunaLabel, gbcEgunaLabel);
+
+		    // Bi lerro gehitu direnez, bi gehitu hurrengo lerroeta pasatzeko
+		    gbcPanelEgunak.gridy = gbcPanelEgunak.gridy + 2;
+
+		    // Hurrengo etiketak gehitzeko, bi zutabe gehituz bakoitzari
+		    for (int j = 0; j < 6; j++) {
+		    	
+		        // Zutabe 1
+		        JLabel label1 = new JLabel("1");
+		        label1.setHorizontalAlignment(SwingConstants.CENTER);
+		        panelEgunak.add(label1, gbcPanelEgunak);
+
+		        // Zutabe 2
+		        gbcPanelEgunak.gridx++;
+		        JLabel label2 = new JLabel("2");
+		        label2.setHorizontalAlignment(SwingConstants.CENTER);
+		        panelEgunak.add(label2, gbcPanelEgunak);
+		        
+		        // Hurrengo lerroa pasa eta zutabeak 0 bihurtu (gridx = 0)
+		        gbcPanelEgunak.gridx = 0;
+		        gbcPanelEgunak.gridy++;
+		    }
+
+		    // Panel-a gehitu egunaren eguraldia panelera
+		    panelEguraldiaEgunak.add(panelEgunak, gbcEgunak);
+		    gbcEgunak.gridx++;
 		}
 
-		System.out.println("Could not find resource");
-		return null;
+		// Panel EguraldiaOrduak elementuak
+		panelEguraldiaOrduak.setLayout(new GridBagLayout());
+		GridBagConstraints gbcOrduak = new GridBagConstraints();
+		gbcOrduak.gridx = 0;
+		gbcOrduak.gridy = 0;
+		gbcOrduak.weightx = 1.0;
+		gbcOrduak.weighty = 1.0;
+		gbcOrduak.fill = GridBagConstraints.BOTH;
+
+		// 24 Orduen elementuak gehitzeko buklea
+		for (int i = 1; i <= 24; i++) {
+			JLabel label = new JLabel("" + i);
+			label.setBorder(innerBorder);
+			label.setPreferredSize(new Dimension(100, 50));
+			panelLabels.add(label, gbcOrduak);
+			gbcOrduak.gridx++;
+		}
+
+		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+		panelEguraldiaOrduak.add(scrollPane, gbcOrduak);
+
+		panelEguraldiaMain.add(panelEguraldiaEgunak, "egunak");
+		panelEguraldiaMain.add(panelEguraldiaOrduak, "orduak");
+
+		frame.add(panelEguraldiaMain, gbc);
+
+		// Uneko eguraldia erakusten duen panelaren elementuak gehitu
+		panelUnekoEguraldia.setBorder(compoundBorder);
+		gbc.gridx = 1;
+		gbc.gridy = 0;
+		gbc.gridwidth = 1;
+		gbc.gridheight = 1;
+		gbc.weightx = 0.75;
+		gbc.weighty = 0.1;
+
+		// Panel EguraldiaEgunak elementuak
+		estiloak.botoiElegantea(btnEgunak);
+		estiloak.botoiElegantea(btnOrduak);				
+		
+		// Etxearen botoia konfiguratu
+		URL etxeaURL = eguraldiaGUI.class.getResource("/ikonoak/etxea.png");
+		ImageIcon etxea = new ImageIcon(etxeaURL);
+		Image etxeaSize = etxea.getImage().getScaledInstance(70, 70, Image.SCALE_SMOOTH);
+        ImageIcon etxeaIcon = new ImageIcon(etxeaSize);
+		btnEtxea.setIcon(etxeaIcon);
+		btnEtxea.setContentAreaFilled(false);
+		btnEtxea.setBorderPainted(false);
+		btnEtxea.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		
+		// Bilaketaren botoia konfiguratu
+		URL bilaketaURL = eguraldiaGUI.class.getResource("/ikonoak/bilatu.png");
+		ImageIcon bilatu = new ImageIcon(bilaketaURL);
+		Image bilatuSize = bilatu.getImage().getScaledInstance(70, 70, Image.SCALE_SMOOTH);
+        ImageIcon bilatuIcon = new ImageIcon(bilatuSize);
+		btnBilatu.setIcon(bilatuIcon);
+		btnBilatu.setContentAreaFilled(false);
+		btnBilatu.setBorderPainted(false);
+		btnBilatu.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+	
+		panelKokapenakEmaitza.setLayout(new BoxLayout(panelKokapenakEmaitza, BoxLayout.X_AXIS));
+
+		// Añadir txtKokapena al panel con un pequeño margen a la izquierda
+		txtKokapena.setBorder(BorderFactory.createEmptyBorder(20, 20, 0, 0));
+		panelKokapenakEmaitza.add(txtKokapena);
+
+		// Añadir un espacio en blanco elástico para empujar los botones a la derecha
+		panelKokapenakEmaitza.add(Box.createHorizontalGlue());
+
+		// Añadir botones btnEtxea y btnBilatu al panel
+		panelKokapenakEmaitza.add(btnEtxea);
+		panelKokapenakEmaitza.add(btnBilatu);
+        
+        btnBilatu.addActionListener(e -> {
+        	bilaketaGUI.bilaketaGUIHasieratu();
+        });
+        
+        panelDatuakJPanel.setLayout(new GridBagLayout());
+        GridBagConstraints gbc2 = new GridBagConstraints();
+
+        for (int i = 0; i < 10; i++) {
+            switch (i) {
+                case 0:
+                    elementos[0] = createImageLabel("/ikonoak/lainotuta.png", 150, 140);
+                    break;
+                case 1:
+                    elementos[1] = createImageLabel("/ikonoak/temperatura.png", 40, 40);
+                    break;
+                case 2:
+                    elementos[2] = createTextLabel("ie", 15);
+                    break;
+                case 3:
+                    elementos[3] = createImageLabel("/ikonoak/ilunabarra.png", 50, 50);
+                    break;
+                case 4:
+                    elementos[4] = createTextLabel("19:20", 15);
+                    break;
+                case 5:
+                    elementos[5] = createTextLabel("", 15);
+                    break;
+                case 6:
+                    elementos[6] = createImageLabel("/ikonoak/flecha.png", 38, 38);
+                    break;
+                case 7:
+                    elementos[7] = createTextLabel("5 km/h", 15);
+                    break;
+                case 8:
+                    elementos[8] = createImageLabel("/ikonoak/egunsentia.png", 50, 50);
+                    break;
+                case 9:
+                    elementos[9] = createTextLabel("07:20", 15);
+                    break;
+                default:
+                    elementos[i] = new JLabel(""); // No necesitas asignar a elemento, ya estás dentro de un switch
+            }
+
+            gbc2.gridy = i < 5 ? 0 : 1;
+            gbc2.gridx = i % 5;
+
+            gbc2.anchor = GridBagConstraints.WEST;
+
+            if (i == 1 || i == 3) {
+                gbc2.insets.right = 10;
+            } else if (i == 0 || i == 2 || i == 4) {
+                gbc2.insets.right = 120;
+            } else {
+                gbc2.insets.right = 0;
+            }
+
+            panelDatuakJPanel.add(elementos[i], gbc2);
+        }
+
+        panelBtn.add(btnEgunak);
+        panelBtn.add(btnOrduak);
+
+        // Agrega el panel principal al contenedor principal con los demás componentes
+        panelUnekoEguraldia.add(panelKokapenakEmaitza, BorderLayout.NORTH);
+        panelUnekoEguraldia.add(panelDatuakJPanel, BorderLayout.CENTER);
+        panelUnekoEguraldia.add(panelBtn, BorderLayout.SOUTH);
+
+		// Panel orduak eta panel egunen arteko aldaketa egiteko listener-ak
+		btnEgunak.addActionListener(e -> {
+			cardLayout.show(panelEguraldiaMain, "egunak");
+		});
+
+		btnOrduak.addActionListener(e -> {
+			cardLayout.show(panelEguraldiaMain, "orduak");
+		});
+
+		frame.add(panelUnekoEguraldia, gbc);
+
+		frame.setSize(1400, 760);
+		frame.setLocationRelativeTo(null);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setVisible(true);		
+		panelUnekoEguraldia.requestFocusInWindow();
+	}
+	
+	public void txtKokapenaAldatu(String textua) {
+		txtKokapena.setText(textua);
+	}
+
+	public void eguraldiaAldatu(eguraldia eguraldia) {
+		
+		Double.toString(eguraldia.getUnekoEguraldia().getTemperature2M());
+		
+		elementos[2].setText(Double.toString(eguraldia.getUnekoEguraldia().getTemperature2M()) + " Cº");
+		elementos[7].setText(Double.toString(eguraldia.getUnekoEguraldia().getWindSpeed10M()) + "km/h");
+	}
+	
+    public static JLabel createImageLabel(String imagePath, int maxWidth, int maxHeight) {
+        URL imageURL = eguraldiaGUI.class.getResource(imagePath);
+        ImageIcon imageIcon = new ImageIcon(imageURL);
+
+        Image img = imageIcon.getImage();
+        Image scaledImg = img.getScaledInstance(maxWidth, maxHeight, Image.SCALE_SMOOTH);
+
+        ImageIcon scaledIcon = new ImageIcon(scaledImg);
+
+        JLabel label = new JLabel(scaledIcon);
+        return label;
+    }
+
+    public static JLabel createTextLabel(String text, int fontSize) {
+        JLabel label = new JLabel(text);
+        label.setFont(label.getFont().deriveFont(Font.BOLD, fontSize));
+        return label;
+    }
+
+	enum astekoEgunak {
+	    Astelehena("Astelehena"),
+	    Asteartea("Asteartea"),
+	    Asteazkena("Asteazkena"),
+	    Osteguna("Osteguna"),
+	    Ostirala("Ostirala"),
+	    Larunbata("Larunbata"),
+	    Igandea("Igandea");
+
+	    private final String euskera;
+
+	    astekoEgunak(String euskera) {
+	        this.euskera = euskera;
+	    }
+
+	    public String getEuskera() {
+	        return euskera;
+	    }
 	}
 }
