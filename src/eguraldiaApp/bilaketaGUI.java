@@ -10,6 +10,9 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 
+/**
+ * Bilaketak egingo diren frame-aren pertsonalizazioa.
+ */
 public class bilaketaGUI {
 
 	// Bilaketa lehioaren elementu printzipalak definitu
@@ -20,6 +23,9 @@ public class bilaketaGUI {
     private static JButton button1 = new JButton("Eguraldia ikusi");
     private static JTextField kokapenaBilatu = new JTextField("Bilatu...");
 
+    /**
+     * Bilaketa elementuak jartzeko frame-an.
+     */
     public static void bilaketaElementuak() {
    
         // Panelaren layout-a konfiguratu
@@ -146,15 +152,19 @@ public class bilaketaGUI {
 								}
 							});
 							
+							// Botoia klikatzen denean, aukeratutako kokapenaren informazioa aldatzen da
 						    button1.addActionListener(e -> {
-						        if (aukeratutakoKokapena[0] != null) {
-						            eguraldia eguraldia = new eguraldia();
-						            eguraldia.getEguraldiDatuak(aukeratutakoKokapena[0]);
-
-						            String txtKokapena = "<html><div style='font-size: 26px;'>" + aukeratutakoKokapena[0].getName() + "</div>"
-						                    + "<div style='font-size: 10px; opacity: 0.6;'>" + aukeratutakoKokapena[0].getCountry() + ", " + aukeratutakoKokapena[0].getAdmin1() + "</div></html>";
-						            eguraldiaGUI eguraldiaGUI = new eguraldiaGUI();
-						            eguraldiaGUI.txtKokapenaAldatu(txtKokapena);
+						        if (aukeratutakoKokapena[0] != null) {	
+						        	
+						        	eguraldia eguraldia = new eguraldia();						        	
+						            eguraldia = eguraldia.getEguraldiDatuak(aukeratutakoKokapena[0]);
+						            
+						            // Aukeratutako kokapenaren eta eguraldiaren informazioko jarri
+						            eguraldiaGUI eguraldiaGUI = new eguraldiaGUI(eguraldia, aukeratutakoKokapena[0]);
+						            
+						            // Intefazeari deitu aldatzeko informazio guztia
+						            eguraldiaGUI.txtKokapenaAldatu(aukeratutakoKokapena[0]);
+						            eguraldiaGUI.eguraldiaAldatu(eguraldia, eguraldiaGUI.class);
 
 						            frameBilatu.setVisible(false);
 						        }
@@ -167,7 +177,7 @@ public class bilaketaGUI {
                         }
                     }
 
-                    // Actualizar la interfaz
+                    // Interfazea eguneratu
                     panelBilaketak.revalidate();
                     panelBilaketak.repaint();
                 }
@@ -176,25 +186,37 @@ public class bilaketaGUI {
 
         });
     }
+    
+    /**
+     * Bilaketa GUI hasieratu.
+     */
     public static void bilaketaGUIHasieratu() {
         
+    	// Elementu guztiak jarri
         bilaketaElementuak();
 
+        // Lehioa konfiguratu eta bistaratu
         frameBilatu.setSize(400, 300);
         frameBilatu.getContentPane().add(panelBilaketak);
         frameBilatu.setLocationRelativeTo(null);
         frameBilatu.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frameBilatu.setVisible(true);
         
+        // Textu elementua husteko listener-a
         frameBilatu.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosed(WindowEvent e) {
-                reiniciarCamposTexto(panelBilaketak);
+            	bueltatuTextua(panelBilaketak);
             }
         });
     }
 
-    public static void reiniciarCamposTexto(JPanel panelBilaketak) {
+    /**
+     * Lehioa ixten bada, uneko egoerara bueltatu txtField-a.
+     *
+     * @param panelBilaketak the panel bilaketak
+     */
+    public static void bueltatuTextua(JPanel panelBilaketak) {
         Component[] components = panelBilaketak.getComponents();
         for (Component component : components) {
             if (component instanceof JTextField) {
@@ -205,4 +227,3 @@ public class bilaketaGUI {
         }
     }
 }
-

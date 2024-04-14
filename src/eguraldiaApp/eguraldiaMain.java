@@ -12,5 +12,6 @@ public class eguraldiaMain {
 		} catch (Exception e) {
 		}
 		eguraldiaGUI.jarriElementuak();
+		serializazioa.kargatuKokapenak("C:/Users/Jon Gonzalez/Desktop/objektuakEguraldia/eguraldia.data");
 	}
 }
